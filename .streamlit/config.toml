@@ -1,4 +1,4 @@
 
 [server]
-maxUploadSize = 3072
-maxMessageSize = 3072
+maxUploadSize = 1000
+maxMessageSize = 1000
