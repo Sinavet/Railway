@@ -6,10 +6,9 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 from utils import filter_large_files, SUPPORTED_EXTS, safe_extract, cleanup_temp_files
-from Recon2 import RESAMPLING
 
 
-def process_rename_mode(uploaded_files, scale_percent=100):
+def process_rename_mode(uploaded_files, scale_percent=100, resampling=None):
     uploaded_files = filter_large_files(uploaded_files)
     if uploaded_files and st.button("Обработать и скачать архив", key="process_rename_btn"):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -94,7 +93,7 @@ def process_rename_mode(uploaded_files, scale_percent=100):
                                             w, h = img.size
                                             new_w = max(1, int(w * scale_percent / 100))
                                             new_h = max(1, int(h * scale_percent / 100))
-                                            img = img.resize((new_w, new_h), RESAMPLING)
+                                            img = img.resize((new_w, new_h), resampling)
                                             img.save(new_path, "JPEG", quality=100, optimize=True, progressive=True)
                                             photo.unlink()  # удалить оригинал
                                             log.append(f"Переименовано и изменено разрешение: '{relative_photo_path}' -> '{relative_new_path}'")
