@@ -7,15 +7,18 @@ from PIL import Image, ImageFont, ImageDraw
 import streamlit as st
 from utils import filter_large_files, SUPPORTED_EXTS, safe_extract, cleanup_temp_files
 from io import BytesIO
+from typing import Optional
+
+RESAMPLING = getattr(getattr(Image, 'Resampling', Image), 'LANCZOS', getattr(Image, 'LANCZOS', getattr(Image, 'NEAREST', 0)))
 
 def apply_watermark(
     base_image: Image.Image,
-    watermark_path: str = None,
+    watermark_path: Optional[str] = None,
     position: str = "bottom_right",
     opacity: float = 0.5,
     scale: float = 0.2,
-    text: str = None,
-    text_options: dict = None,
+    text: Optional[str] = None,
+    text_options: Optional[dict] = None,
 ) -> Image.Image:
     """
     Накладывает водяной знак (PNG или текст) на изображение.
@@ -41,7 +44,7 @@ def apply_watermark(
         wm_width = int(img.width * scale)
         wm_ratio = wm_width / wm.width
         wm_height = int(wm.height * wm_ratio)
-        wm = wm.resize((wm_width, wm_height), Image.Resampling.LANCZOS)
+        wm = wm.resize((wm_width, wm_height), RESAMPLING)
         # Применение прозрачности
         if opacity < 1.0:
             alpha = wm.getchannel("A").point(lambda p: int(p * opacity))
@@ -124,6 +127,7 @@ def process_watermark_mode(uploaded_files, preset_choice, user_wm_file, user_wm_
                             cleanup_temp_files(temp_dir)
                     elif uploaded.name.lower().endswith(SUPPORTED_EXTS):
                         img_temp = os.path.join(temp_dir, uploaded.name)
+                        os.makedirs(os.path.dirname(img_temp), exist_ok=True)
                         with open(img_temp, "wb") as f:
                             f.write(uploaded.read())
                         all_images.append(Path(img_temp))
@@ -179,7 +183,7 @@ def process_watermark_mode(uploaded_files, preset_choice, user_wm_file, user_wm_
                                     w, h = processed_img.size
                                     new_w = max(1, int(w * scale_percent / 100))
                                     new_h = max(1, int(h * scale_percent / 100))
-                                    processed_img = processed_img.resize((new_w, new_h), Image.LANCZOS)
+                                    processed_img = processed_img.resize((new_w, new_h), RESAMPLING)
                                 processed_img.save(out_path, "JPEG", quality=100, optimize=True, progressive=True)
                                 processed_files.append((out_path, rel_path.with_suffix('.jpg')))
                                 log.append(f"✅ {rel_path} → {rel_path.with_suffix('.jpg')} (время: {time.time() - start_time:.2f} сек)")
