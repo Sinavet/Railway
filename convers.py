@@ -37,6 +37,7 @@ def process_convert_mode(uploaded_files, scale_percent=100):
                         cleanup_temp_files(temp_dir)
                 elif uploaded.name.lower().endswith(SUPPORTED_EXTS):
                     img_temp = os.path.join(temp_dir, uploaded.name)
+                    os.makedirs(os.path.dirname(img_temp), exist_ok=True)
                     with open(img_temp, "wb") as f:
                         f.write(uploaded.read())
                     all_images.append(Path(img_temp))
