@@ -165,6 +165,11 @@ def process_watermark_mode(uploaded_files, preset_choice, user_wm_file, user_wm_
                         status_placeholder = st.empty()
                         for i, img_path in enumerate(all_images, 1):
                             rel_path = img_path.relative_to(temp_dir)
+                            if not img_path.exists():
+                                log.append(f"❌ {rel_path}: файл не найден для обработки.")
+                                progress_bar.progress(i / len(all_images))
+                                status_placeholder.markdown(f"<span style='color:#4a90e2;'>Обработано файлов: <b>{i}/{len(all_images)}</b></span>", unsafe_allow_html=True)
+                                continue
                             out_path = os.path.join(temp_dir, str(rel_path.with_suffix('.jpg')))
                             out_dir = os.path.dirname(out_path)
                             os.makedirs(out_dir, exist_ok=True)
