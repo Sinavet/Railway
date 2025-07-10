@@ -87,7 +87,7 @@ with st.expander("ℹ️ Инструкция и ответы на вопрос�
     st.markdown("""
     **Как пользоваться:**
     1. Выберите режим работы (переименование, конвертация, водяной знак).
-    2. Загрузите изображения или архив (ZIP).
+    2. Загрузите изображения или архив (ZIP, до 1 ГБ).
     3. Настройте параметры (масштаб, качество, водяной знак).
     4. Нажмите кнопку обработки и скачайте результат.
 
@@ -106,9 +106,11 @@ with st.expander("ℹ️ Инструкция и ответы на вопрос�
     - **Какие форматы поддерживаются?**  
       JPG, PNG, BMP, WEBP, TIFF, HEIC, HEIF, ZIP (архивы с этими изображениями).
     - **Как добавить свой водяной знак?**  
-      Загрузите PNG/JPG-файл водяного знака или выберите из папки watermarks.
+      Можно выбрать только из папки watermarks. Загрузка своих водяных знаков недоступна.
     - **Что делать, если приложение "зависло"?**  
       Попробуйте обновить страницу или уменьшить количество/размер файлов.
+    - **Какой лимит на загрузку?**  
+      Максимальный размер всех файлов — 1 ГБ.
     """)
 
 if "reset_uploader" not in st.session_state:
@@ -147,7 +149,7 @@ st.markdown(
 )
 
 uploaded_files = st.file_uploader(
-    f"Загрузите изображения или архив (до 3 ГБ, поддерживаются JPG, PNG, HEIC, ZIP и др.)",
+    f"Загрузите изображения или архив (до 1 ГБ, поддерживаются JPG, PNG, HEIC, ZIP и др.)",
     type=["jpg", "jpeg", "png", "bmp", "webp", "tiff", "heic", "heif", "zip"],
     accept_multiple_files=True,
     key=st.session_state["reset_uploader"]
@@ -156,22 +158,17 @@ logger.debug(f"Загружено файлов: {len(uploaded_files) if uploaded
 
 # --- UI для режима Водяной знак ---
 if mode == "Водяной знак":
-    st.markdown("**Выберите водяной знак (PNG/JPG):**")
+    st.markdown("**Выберите водяной знак (PNG/JPG) из папки watermarks:**")
     import glob
     from water import apply_watermark
-    # Для Streamlit Cloud: ищем watermarks в корне проекта
     watermark_dir = Path("watermarks")
     preset_files = []
     if watermark_dir.exists():
         preset_files = [f.name for f in watermark_dir.iterdir() if f.suffix.lower() in (".png", ".jpg", ".jpeg")]
     preset_choice = st.selectbox("Водяные знаки из папки watermarks/", ["Нет"] + preset_files)
-    user_wm_file = st.file_uploader("Или загрузите свой PNG/JPG водяной знак", type=["png", "jpg", "jpeg"], key="watermark_upload")
+    # Удалена возможность загрузки пользовательского водяного знака
+    user_wm_file = None
     user_wm_path = None
-    if user_wm_file is not None:
-        tmp_dir = tempfile.gettempdir()
-        user_wm_path = os.path.join(tmp_dir, f"user_wm_{user_wm_file.name}")
-        with open(user_wm_path, "wb") as f:
-            f.write(user_wm_file.read())
     st.sidebar.header('Настройки водяного знака')
     opacity = st.sidebar.slider('Прозрачность', 0, 100, 60) / 100.0
     size_percent = st.sidebar.slider('Размер (% от ширины фото)', 5, 80, 25)
@@ -221,11 +218,6 @@ if mode == "Водяной знак":
     wm_path = None
     if preset_choice != "Нет":
         wm_path = str(watermark_dir / preset_choice)
-    elif user_wm_file:
-        tmp_dir = tempfile.gettempdir()
-        wm_path = os.path.join(tmp_dir, f"user_wm_{user_wm_file.name}")
-        with open(wm_path, "wb") as f:
-            f.write(user_wm_file.getvalue() if hasattr(user_wm_file, 'getvalue') else user_wm_file.read())
     try:
         if wm_path:
             preview = apply_watermark(preview_img, watermark_path=wm_path, position=pos_map[position], opacity=opacity, scale=size_percent/100.0)
@@ -286,7 +278,7 @@ UPLOAD_LIMIT_MB = 1024
 if uploaded_files:
     total_upload = sum([file.size if hasattr(file, 'size') else 0 for file in uploaded_files])
     if total_upload > UPLOAD_LIMIT_MB * 1024 * 1024:
-        st.error(f"Суммарный размер файлов превышает лимит Streamlit Cloud ({UPLOAD_LIMIT_MB} МБ). Загрузите меньше файлов или уменьшите их размер.")
+        st.error(f"Суммарный размер файлов превышает лимит Streamlit Cloud (1 ГБ). Загрузите меньше файлов или уменьшите их размер.")
         st.stop()
 
 if mode == "Переименование фото":
