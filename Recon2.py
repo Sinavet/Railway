@@ -159,10 +159,11 @@ if mode == "Водяной знак":
     st.markdown("**Выберите водяной знак (PNG/JPG):**")
     import glob
     from water import apply_watermark
-    watermark_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "watermarks"))
+    # Для Streamlit Cloud: ищем watermarks в корне проекта
+    watermark_dir = Path("watermarks")
     preset_files = []
-    if os.path.exists(watermark_dir):
-        preset_files = [f for f in os.listdir(watermark_dir) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+    if watermark_dir.exists():
+        preset_files = [f.name for f in watermark_dir.iterdir() if f.suffix.lower() in (".png", ".jpg", ".jpeg")]
     preset_choice = st.selectbox("Водяные знаки из папки watermarks/", ["Нет"] + preset_files)
     user_wm_file = st.file_uploader("Или загрузите свой PNG/JPG водяной знак", type=["png", "jpg", "jpeg"], key="watermark_upload")
     user_wm_path = None
@@ -219,7 +220,7 @@ if mode == "Водяной знак":
         preview_img = Image.new("RGB", (400, 300), bg_color)
     wm_path = None
     if preset_choice != "Нет":
-        wm_path = os.path.join(watermark_dir, preset_choice)
+        wm_path = str(watermark_dir / preset_choice)
     elif user_wm_file:
         tmp_dir = tempfile.gettempdir()
         wm_path = os.path.join(tmp_dir, f"user_wm_{user_wm_file.name}")
@@ -279,6 +280,14 @@ if uploaded_files:
     except Exception as e:
         logger.error(f"Ошибка при оценке размера: {e}")
         st.sidebar.warning(f"Не удалось рассчитать размер: {e}")
+
+# --- Лимит загрузки для Streamlit Cloud: 1 ГБ ---
+UPLOAD_LIMIT_MB = 1024
+if uploaded_files:
+    total_upload = sum([file.size if hasattr(file, 'size') else 0 for file in uploaded_files])
+    if total_upload > UPLOAD_LIMIT_MB * 1024 * 1024:
+        st.error(f"Суммарный размер файлов превышает лимит Streamlit Cloud ({UPLOAD_LIMIT_MB} МБ). Загрузите меньше файлов или уменьшите их размер.")
+        st.stop()
 
 if mode == "Переименование фото":
     process_rename_mode(uploaded_files, scale_percent, RESAMPLING)
