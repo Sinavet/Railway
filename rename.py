@@ -6,6 +6,7 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 from utils import filter_large_files, SUPPORTED_EXTS, safe_extract, cleanup_temp_files
+# from Recon2 import RESAMPLING  # Удаляем этот импорт
 
 
 def process_rename_mode(uploaded_files, scale_percent=100, resampling=None):
