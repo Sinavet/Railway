@@ -281,7 +281,7 @@ if uploaded_files:
         st.sidebar.warning(f"Не удалось рассчитать размер: {e}")
 
 if mode == "Переименование фото":
-    process_rename_mode(uploaded_files, scale_percent)
+    process_rename_mode(uploaded_files, scale_percent, RESAMPLING)
 elif mode == "Конвертация в JPG":
     process_convert_mode(uploaded_files, scale_percent)
 elif mode == "Водяной знак":
