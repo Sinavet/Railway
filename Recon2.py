@@ -294,14 +294,13 @@ if st.session_state.get("result_zip"):
     result_zip = st.session_state["result_zip"]
     archive_data = None
     archive_size = None
+    # Всегда ожидаем bytes! Если не bytes — это ошибка логики.
     if isinstance(result_zip, bytes):
         archive_data = result_zip
         archive_size = len(result_zip)
-    elif isinstance(result_zip, str) and os.path.exists(result_zip):
-        with open(result_zip, "rb") as f:
-            archive_data = f.read()
-            archive_size = os.path.getsize(result_zip)
-    else:
+    elif result_zip is not None:
+        st.error("Внутренняя ошибка: архив должен быть в памяти (bytes), а не по пути. Пожалуйста, повторите обработку.")
+        logger.error(f"result_zip имеет неверный тип: {type(result_zip)}")
         archive_data = None
     if archive_data:
         st.download_button(
