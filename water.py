@@ -123,8 +123,9 @@ def process_watermark_mode(uploaded_files, preset_choice, user_wm_file, user_wm_
                                 extracted = [file for file in Path(temp_dir).rglob("*") if file.is_file() and file.suffix.lower() in SUPPORTED_EXTS]
                                 log.append(f"📦 Архив {uploaded.name}: найдено {len(extracted)} изображений.")
                                 all_images.extend(extracted)
-                        finally:
-                            cleanup_temp_files(temp_dir)
+                        except Exception as e:
+                            log.append(f"❌ Ошибка открытия архива {uploaded.name}: {e}")
+                            continue
                     elif uploaded.name.lower().endswith(SUPPORTED_EXTS):
                         img_temp = os.path.join(temp_dir, uploaded.name)
                         os.makedirs(os.path.dirname(img_temp), exist_ok=True)
