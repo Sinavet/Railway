@@ -101,7 +101,6 @@ def process_convert_mode(uploaded_files, scale_percent=100):
                             if folder.is_dir() and not any(folder.iterdir()):
                                 arcname = folder.relative_to(Path(temp_dir))
                                 zipf.writestr(str(arcname) + "/", "")
-                        # log.txt больше не добавляем в архив
                     with open(result_zip, "rb") as f:
                         st.session_state["result_zip"] = f.read()
                     st.session_state["stats"] = {
