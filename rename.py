@@ -128,14 +128,16 @@ def process_rename_mode(uploaded_files, scale_percent=100, resampling=None):
                 try:
                     result_zip = os.path.join(temp_dir, "result_rename.zip")
                     with zipfile.ZipFile(result_zip, "w") as zipf:
+                        # Добавляем файлы
                         for file in files_to_zip:
                             arcname = file.relative_to(zip_root)
                             zipf.write(file, arcname=arcname)
+                        # Добавляем пустые папки
+                        for folder in Path(zip_root).rglob("*"):
+                            if folder.is_dir() and not any(folder.iterdir()):
+                                arcname = folder.relative_to(zip_root)
+                                zipf.writestr(str(arcname) + "/", "")
                     st.success(f"✅ Успешно переименовано: {renamed} файлов. Пропущено: {skipped}.")
-                    with open(result_zip, "rb") as f:
-                        st.session_state["result_zip"] = f.read()
-                    st.session_state["stats"] = {"total": len(all_images), "renamed": renamed, "skipped": skipped}
-                    st.session_state["log"] = log
                     if skipped > 0:
                         with st.expander("Показать подробный лог", expanded=False):
                             st.text_area("Лог:", value="\n".join(log), height=300, disabled=True)
