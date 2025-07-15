@@ -33,8 +33,9 @@ def process_convert_mode(uploaded_files, scale_percent=100):
                             extracted = [file for file in Path(temp_dir).rglob("*") if file.is_file() and file.suffix.lower() in SUPPORTED_EXTS]
                             log.append(f"📦 Архив {uploaded.name}: найдено {len(extracted)} изображений.")
                             all_images.extend(extracted)
-                    finally:
-                        cleanup_temp_files(temp_dir)
+                    except Exception as e:
+                        log.append(f"❌ Ошибка открытия архива {uploaded.name}: {e}")
+                        continue
                 elif uploaded.name.lower().endswith(SUPPORTED_EXTS):
                     img_temp = os.path.join(temp_dir, uploaded.name)
                     with open(img_temp, "wb") as f:
