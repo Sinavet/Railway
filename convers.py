@@ -33,12 +33,10 @@ def process_convert_mode(uploaded_files, scale_percent=100):
                             extracted = [file for file in Path(temp_dir).rglob("*") if file.is_file() and file.suffix.lower() in SUPPORTED_EXTS]
                             log.append(f"📦 Архив {uploaded.name}: найдено {len(extracted)} изображений.")
                             all_images.extend(extracted)
-                    except Exception as e:
-                        log.append(f"❌ Ошибка открытия архива {uploaded.name}: {e}")
-                        continue
+                    finally:
+                        cleanup_temp_files(temp_dir)
                 elif uploaded.name.lower().endswith(SUPPORTED_EXTS):
                     img_temp = os.path.join(temp_dir, uploaded.name)
-                    os.makedirs(os.path.dirname(img_temp), exist_ok=True)
                     with open(img_temp, "wb") as f:
                         f.write(uploaded.read())
                     all_images.append(Path(img_temp))
@@ -98,6 +96,11 @@ def process_convert_mode(uploaded_files, scale_percent=100):
                     with zipfile.ZipFile(result_zip, "w") as zipf:
                         for src, rel in converted_files:
                             zipf.write(src, arcname=rel)
+                        # Добавляем пустые папки
+                        for folder in Path(temp_dir).rglob("*"):
+                            if folder.is_dir() and not any(folder.iterdir()):
+                                arcname = folder.relative_to(Path(temp_dir))
+                                zipf.writestr(str(arcname) + "/", "")
                         # log.txt больше не добавляем в архив
                     with open(result_zip, "rb") as f:
                         st.session_state["result_zip"] = f.read()
