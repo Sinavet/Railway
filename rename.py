@@ -140,9 +140,8 @@ def process_rename_mode(uploaded_files, scale_percent=100, resampling=None):
                     with open(result_zip, "rb") as f:
                         st.session_state["result_zip"] = f.read()
                     st.success(f"✅ Успешно переименовано: {renamed} файлов. Пропущено: {skipped}.")
-                    if skipped > 0:
-                        with st.expander("Показать подробный лог", expanded=False):
-                            st.text_area("Лог:", value="\n".join(log), height=300, disabled=True)
+                    with st.expander("Показать подробный лог", expanded=False):
+                        st.text_area("Лог:", value="\n".join(log), height=300, disabled=True)
                 except Exception as e:
                     st.error(f"Ошибка при архивации или чтении архива: {e}")
                     result_zip = os.path.join(temp_dir, "result_rename.zip")
