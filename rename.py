@@ -137,6 +137,8 @@ def process_rename_mode(uploaded_files, scale_percent=100, resampling=None):
                             if folder.is_dir() and not any(folder.iterdir()):
                                 arcname = folder.relative_to(zip_root)
                                 zipf.writestr(str(arcname) + "/", "")
+                    with open(result_zip, "rb") as f:
+                        st.session_state["result_zip"] = f.read()
                     st.success(f"✅ Успешно переименовано: {renamed} файлов. Пропущено: {skipped}.")
                     if skipped > 0:
                         with st.expander("Показать подробный лог", expanded=False):
