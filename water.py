@@ -196,7 +196,7 @@ def process_watermark_mode(uploaded_files, preset_choice, user_wm_file, user_wm_
                             <div style='font-size:1.3em;font-weight:600;margin:1em 0 0.5em 0;'>📦 Шаг 3: Архивация результата</div>
                         """, unsafe_allow_html=True)
                         # Архивация только обработанных файлов
-                        files_to_zip = [Path(out_path) for out_path, _ in processed_files]
+                        files_to_zip = [Path(out_path) for out_path, _ in processed_files if Path(out_path).is_file()]
                         log_path = os.path.join(temp_dir, "log.txt")
                         if os.path.exists(log_path):
                             files_to_zip.append(Path(log_path))
